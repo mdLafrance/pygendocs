@@ -57,4 +57,4 @@ def check_formatting(c):
 
 @task
 def test(c):
-    c.run("poetry run pytest tests/")
+    c.run("poetry run pytest src/tests/")
