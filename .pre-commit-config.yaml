@@ -1,0 +1,15 @@
+repos:
+- repo: local
+  hooks:
+    - id: formatting
+      name: Check formatting
+      entry: "poetry run inv check-formatting"
+      language: system
+      types: [python]
+      pass_filenames: false
+    - id: test 
+      name: Run Tests
+      entry: "poetry run inv test"
+      language: system
+      types: [python]
+      pass_filenames: false
