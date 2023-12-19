@@ -1,7 +1,12 @@
 print("main!")
 
-import os
+from .config import read_from_toml
+from .utils import check_for_git_changes
 
-import rich
+def main():
+    print("Changes?")
+    print(check_for_git_changes())
 
-asdf
+
+if __name__ == "__main__":
+    main()

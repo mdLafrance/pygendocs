@@ -1,1 +1,1 @@
-print("foo!")
+_PACKAGE_NAME = "pygendocs"
