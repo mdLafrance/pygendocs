@@ -1,7 +1,7 @@
 print("main!")
 
-import rich
-
 import os
+
+import rich
 
 asdf

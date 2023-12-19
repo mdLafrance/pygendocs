@@ -3,6 +3,7 @@
 Use with `poetry run invoke <step>`.
 Or from within a poetry shell, simply `invoke <step>`
 """
+import sys
 
 from invoke import task
 from invoke.exceptions import UnexpectedExit
@@ -33,11 +34,13 @@ def format(c):
     _print_title("Formatting code")
 
     c.run("poetry run black ./src")
-
+    c.run("poetry run isort ./src")
 
 @task 
 def check_formatting(c):
     _print_title("Checking code formatting")
+
+    failed = False
 
     ### Check black
     _print_section("Black")
@@ -45,14 +48,20 @@ def check_formatting(c):
         c.run("poetry run black ./src --diff --check --color")
     except UnexpectedExit:
         _print_fail()
+        failed = True
 
 
     ### Check import orders are orderly
     _print_section("Isort (import sort)")
     try:
+        c.run("poetry run isort ./src --diff")
         c.run("poetry run isort ./src --check")
     except UnexpectedExit:
         _print_fail()
+        failed = True
+
+    if failed:
+        sys.exit(1)
 
 
 @task
