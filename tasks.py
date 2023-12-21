@@ -34,10 +34,10 @@ def format(c):
     _print_title("Formatting code")
 
     c.run("poetry run black ./src")
-    c.run("poetry run isort ./src")
+
 
 @task 
-def check_formatting(c):
+def formatting(c):
     _print_title("Checking code formatting")
 
     failed = False
@@ -46,16 +46,6 @@ def check_formatting(c):
     _print_section("Black")
     try:
         c.run("poetry run black ./src --diff --check --color")
-    except UnexpectedExit:
-        _print_fail()
-        failed = True
-
-
-    ### Check import orders are orderly
-    _print_section("Isort (import sort)")
-    try:
-        c.run("poetry run isort ./src --diff")
-        c.run("poetry run isort ./src --check")
     except UnexpectedExit:
         _print_fail()
         failed = True

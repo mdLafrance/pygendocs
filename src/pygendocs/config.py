@@ -4,7 +4,13 @@
 from enum import Enum
 
 import tomli
+
 from pydantic import BaseModel
+
+
+class LLMConfiguration(BaseModel):
+    model: str
+    max_tokens: int = 800
 
 
 class DocstringStyle(str, Enum):
@@ -55,9 +61,7 @@ class PyGenDocsConfiguration(BaseModel):
 
 
 def read_from_toml(config_file: str = "pyproject.toml") -> PyGenDocsConfiguration:
-    ...
-    # a = 10
-    # with open(config_file, 'r') as f:
-    #     config_dict = tomli.loads(f.read()).get("tool", {}).get("pygendocs", {})
+    with open(config_file, "r") as f:
+        config_dict = tomli.loads(f.read()).get("tool", {}).get("pygendocs", {})
 
-    #     return PyGenDocsConfiguration(**config_dict)
+        return PyGenDocsConfiguration(**config_dict)

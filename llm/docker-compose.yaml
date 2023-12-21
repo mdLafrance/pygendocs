@@ -7,7 +7,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      - VLLM_MODEL=gpt2
+      - VLLM_MODEL=codellama/CodeLlama-7b-hf
     deploy:
       resources:
         reservations:
