@@ -12,6 +12,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
 
+from . import llm
 from .config import read_from_toml
 from .functions import ResolvedFunction, get_functions_from_file
 from .git import check_for_git_changes
@@ -32,6 +33,18 @@ def main(paths: List[Path], preview: bool = False, force: bool = False):
 
     if preview:
         preview_function_changes(functions)
+
+    fn = functions[0]
+
+    print("[bold yellow] > [/][bold]Generating docstring for:")
+    print(Panel(Syntax(fn.source_str, "python")))
+
+    client = llm.get_openai_client()
+
+    ds = llm.generate_function_docstring(client, fn)
+
+    print("Generated docstring:")
+    print(Panel(Syntax(ds, "python")))
 
 
 def preview_function_changes(functions: List[ResolvedFunction]):

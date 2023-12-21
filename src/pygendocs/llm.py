@@ -2,11 +2,36 @@
 """
 import ast
 import os
+from functools import lru_cache
 from pathlib import Path
 
 import openai
 import tiktoken
 from rich import print
+
+from .functions import ResolvedFunction
+
+
+@lru_cache
+def get_openai_client(base_url: str = None, api_key: str = None):
+    return openai.OpenAI(api_key="asdf", base_url="http://localhost:8000/v1")
+
+
+def generate_function_docstring(client: openai.OpenAI, fn: ResolvedFunction) -> str:
+    docstring = (
+        client.completions.create(
+            model="gpt2", prompt=_format_docstring_request_prompt(fn), max_tokens=800
+        )
+        .choices[0]
+        .text
+    )
+
+    return docstring
+
+
+def _format_docstring_request_prompt(fn: ResolvedFunction) -> str:
+    return f"Generate a python docstring in Google style for the following function:\n\n{fn.source_str}"
+
 
 # f = str((Path(__file__).parent / "./config.py").resolve())
 
