@@ -19,6 +19,7 @@
 
   [![Pipeline](https://github.com/mdLafrance/pygendocs/actions/workflows/pipeline.yml/badge.svg)](https://github.com/mdLafrance/pygendocs/actions/workflows/pipeline.yml)
   [![PyPI version](https://badge.fury.io/py/pygendocs.svg)](https://badge.fury.io/py/pygendocs)
+  [![Coverage Status](https://coveralls.io/repos/github/mdLafrance/pygendocs/badge.svg?branch=update/base-functionality)](https://coveralls.io/github/mdLafrance/pygendocs?branch=update/base-functionality)
   
 </div>
 
@@ -84,7 +85,7 @@ ignore_cache = true
 docstring_style = "Numpydocs"
 codegen_server = "http://localhost:8000/v1"
 ```
-The internal pydantic struct [`PyGenDocsConfiguration`](./src/pygendocs/config.py#L23) outlines all supported configuration options, and is simply constructed out of the options the exist in `pyproject.toml`. Refer to that struct for supported options and their syntax.
+The internal pydantic struct [`PyGenDocsConfiguration`](./src/pygendocs/config.py#L23) outlines all supported configuration options. Refer to that struct for supported options and their syntax.
 
 ## LLM integration and self-hosting 🤖
 > 👷‍♂️ tbd
