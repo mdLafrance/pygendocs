@@ -57,3 +57,8 @@ def formatting(c):
 @task
 def test(c):
     c.run("poetry run pytest src/tests/")
+
+
+@task
+def coverage(c):
+    c.run("poetry run coverage run -m pytest ./src/tests/")
