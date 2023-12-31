@@ -47,20 +47,24 @@ class PyGenDocsConfiguration(BaseModel):
     Defaults to Google python style.
     """
 
-    openai_api_env_key: str = "PYGENDOCS_OPENAI_API_KEY"
-    """The environment key from which your openai api token will be read."""
-
-    openai_endpoint_env_key: str = None
-    """The environment key from which an override to the default openai api
-    endpoint can be specified.
+    llm_url_env_key: str = "PYGENDOCS_API_KEY"
+    """The environment variable from which the url of the chosen llm api is hosted.
     
-    For example, if locally hosting an LLM which implements the openai protocol."""
+    Defaults to PYGENDOCS_API_KEY.
+    """
+
+    llm_api_token_env_key: str = None
+    """The environment variable from which any required llm api token will be read from.
+    
+    Defaults to the 
+    """
 
     class config:
         allow_arbitrary_types = True
 
 
 def read_from_toml(config_file: str = "pyproject.toml") -> PyGenDocsConfiguration:
+    """Load the configuration for the given project from the project's toml file."""
     with open(config_file, "r") as f:
         config_dict = tomli.loads(f.read()).get("tool", {}).get("pygendocs", {})
 

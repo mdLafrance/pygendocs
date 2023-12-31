@@ -2,19 +2,42 @@
 """
 import ast
 import os
+import logging
+
 from functools import lru_cache
 from pathlib import Path
 
 import openai
 import tiktoken
+
 from rich import print
 
 from .functions import ResolvedFunction
 
 
+_LOGGER = logging.getLogger(__name__)
+
+
 @lru_cache
 def get_openai_client(base_url: str = None, api_key: str = None):
-    return openai.OpenAI(api_key="asdf", base_url="http://localhost:8000/v1")
+    """Generate an instance of an openai client to communicate with the llm server.
+
+    This function will memoize results.
+
+    Args:
+        base_url: The web url the api server is reachable at.
+        api_key: The api key used to authenticate with the server.
+
+    Returns:
+        An `openai.OpenAI` client object.
+    """
+    _LOGGER.debug(f"Generating llm client for {base_url} with key {api_key}")
+
+    client = openai.OpenAI(base_url=base_url, api_key=api_key)
+
+    _LOGGER.debug(f"Generated client: {client}")
+
+    return client
 
 
 def generate_function_docstring(client: openai.OpenAI, fn: ResolvedFunction) -> str:
