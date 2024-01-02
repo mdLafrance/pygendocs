@@ -4,7 +4,7 @@ import ast
 import os
 from itertools import chain
 from pathlib import Path
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, Optional
 
 import typer
 from rich import print
@@ -14,7 +14,7 @@ from rich.table import Table
 from rich.status import Status
 
 from . import llm
-from .cli import clean_input_paths
+from .cli import clean_input_paths, print_message, get_functions_from_paths
 from .config import read_from_toml
 from .functions import ResolvedFunction, get_functions_from_file
 from .git import check_for_git_changes
@@ -22,21 +22,16 @@ from .git import check_for_git_changes
 app = typer.Typer(add_completion=False)
 
 
-@app.command()
-def main(paths: List[Path], preview: bool = False, force: bool = False):
+@app.command(no_args_is_help=True)
+def run(
+    paths: List[Path], preview: bool = False, force: bool = False, test: bool = False
+):
     """Automatically identifies and generates missing docstrings for python files
     using OpenAI (or the LLM of your choice)."""
 
-    ### Get functions from input paths
-    with Status(f"Scanning input files...") as s:
-        cleaned_paths = clean_input_paths(paths)
+    functions = get_functions_from_paths(paths)
 
-        functions = list(
-            chain.from_iterable(get_functions_from_file(p) for p in cleaned_paths)
-        )
-
-    if preview:
-        preview_function_changes(functions)
+    print("Running!")
 
     # fn = functions[0]
 
@@ -51,15 +46,28 @@ def main(paths: List[Path], preview: bool = False, force: bool = False):
     # print(Panel(Syntax(ds, "python")))
 
 
+@app.command()
+def test():
+    """Run a test scenario against the current LLM server configuration.
+
+    Useful to check correctness if hosting your own LLM server, by making sure
+    that the language model is behaving as expected.
+    """
+    print()
+    print_message(f"Running test on current LLM configuration")
+    print()
+
+
 def preview_function_changes(functions: List[ResolvedFunction]):
+    """Generates a preview for the docstrings that would be generated for `functions`."""
+
+    print_message(f"Generating docstring previews")
+    print()
+
     ### Filter out functions that have docstrings
     functions = [fn for fn in functions if not fn.has_docstring]
 
     ### Print the source code for each function
-
-    print()
-    print(f"  [bold yellow]> [/][bold]Generating docstring preview")
-
     for fn in functions:
         print(
             Panel(
@@ -73,8 +81,8 @@ def preview_function_changes(functions: List[ResolvedFunction]):
     num_files = len(set(fn.source_file for fn in functions))
 
     print()
-    print(
-        f"  [bold yellow]> [/][bold]The given docstrings would be applied to {len(functions)} functions across {num_files} files."
+    print_message(
+        f"The given docstrings would be applied to {len(functions)} functions across {num_files} files."
     )
     print()
 

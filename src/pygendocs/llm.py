@@ -12,6 +12,7 @@ import tiktoken
 
 from rich import print
 
+from .config import LLMConfiguration
 from .functions import ResolvedFunction
 
 
@@ -19,10 +20,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @lru_cache
-def get_openai_client(base_url: str = None, api_key: str = None):
-    """Generate an instance of an openai client to communicate with the llm server.
+def get_llm_api_client(base_url: str = None, api_key: str = None):
+    """Generate an instance of an openai compatible client to communicate with the llm server.
 
-    This function will memoize results.
+    This function will cache calls with the same url/api token.
 
     Args:
         base_url: The web url the api server is reachable at.
@@ -40,10 +41,16 @@ def get_openai_client(base_url: str = None, api_key: str = None):
     return client
 
 
-def generate_function_docstring(client: openai.OpenAI, fn: ResolvedFunction) -> str:
+def generate_function_docstring(
+    client: openai.OpenAI, cfg: LLMConfiguration, fn: ResolvedFunction
+) -> str:
+    """Dispatch a call to the api client to generate a docstring for the given `ResolvedFunction` object."""
     docstring = (
         client.completions.create(
-            model="gpt2", prompt=_format_docstring_request_prompt(fn), max_tokens=800
+            model=cfg.model,
+            prompt=_format_docstring_request_prompt(fn),
+            max_tokens=800,
+            n=1,
         )
         .choices[0]
         .text
