@@ -12,7 +12,23 @@ from pydantic import BaseModel
 class LLMConfiguration(BaseModel):
     model: str
     max_tokens: int = 800
+    api_token_env_key: str
     base_url: Optional[str] = None
+
+    def __hash__(self):
+        return hash(
+            "|".join(
+                (
+                    str(s)
+                    for s in [
+                        self.model,
+                        self.max_tokens,
+                        self.api_token_env_key,
+                        self.base_url,
+                    ]
+                )
+            )
+        )
 
 
 class DocstringStyle(str, Enum):
@@ -51,7 +67,7 @@ class PyGenDocsConfiguration(BaseModel):
     Defaults to Google python style.
     """
 
-    llm_api_url: str = None  # "https://api.openai.com/v1/chat/completions"
+    llm_api_url: Optional[str] = None  # "https://api.openai.com/v1/chat/completions"
     """The environment variable from which the url of the chosen llm api is hosted.
     
     Defaults to openai chatgpt completion endpoint.
@@ -81,6 +97,7 @@ class PyGenDocsConfiguration(BaseModel):
             model=self.llm_model,
             max_tokens=self.llm_completion_max_tokens,
             base_url=self.llm_api_url,
+            api_token_env_key=self.llm_api_token_env_key,
         )
 
 

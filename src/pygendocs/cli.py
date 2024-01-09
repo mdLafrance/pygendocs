@@ -15,8 +15,9 @@ from rich import print
 from rich.status import Status
 from rich.panel import Panel
 from rich.syntax import Syntax
+from rich.prompt import Prompt
 
-from .config import PyGenDocsConfiguration
+from .config import PyGenDocsConfiguration, read_from_toml
 from .functions import get_functions_from_file, ResolvedFunction
 
 
@@ -117,5 +118,16 @@ def print_function(fn: ResolvedFunction, lines: int = 50):
     )
 
 
-def update_config(cfg: PyGenDocsConfiguration, opts: dict) -> PyGenDocsConfiguration:
-    return PyGenDocsConfiguration(dict(cfg.model_dump(), **opts))
+def get_updated_config(opts: dict) -> PyGenDocsConfiguration:
+    """Generate a config struct from default or from the contents of pyproject.toml,
+    and then update it with the contents of `opts`.
+    """
+    return PyGenDocsConfiguration(**dict(read_from_toml().model_dump(), **opts))
+
+
+def format_function_location(fn: ResolvedFunction) -> str:
+    return f"{fn.source_file}:[bold]{fn.name}"
+
+
+def answered_yes(m: str, default="yes") -> bool:
+    return Prompt.ask(m, default=default, choices=["yes", "no"]) == "yes"

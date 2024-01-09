@@ -20,6 +20,7 @@ gitpython = "^3.1.40"
 typer = {extras = ["all"], version = "^0.9.0"}
 openai = "^1.6.0"
 tiktoken = "^0.5.2"
+cachier = "^2.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

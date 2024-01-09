@@ -12,7 +12,10 @@ import tiktoken
 
 from rich import print
 
+from cachier import cachier
+
 from .config import LLMConfiguration
+from .exceptions import APIKeyNotFoundError
 from .functions import ResolvedFunction
 
 
@@ -20,25 +23,67 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @lru_cache
-def get_llm_api_client(base_url: str = None, api_key: str = None):
+def get_llm_api_client(cfg: LLMConfiguration):
     """Generate an instance of an openai compatible client to communicate with the llm server.
 
-    This function will cache calls with the same url/api token.
+    This function will cache repeated calls with the same configuration.
 
     Args:
-        base_url: The web url the api server is reachable at.
-        api_key: The api key used to authenticate with the server.
+        cfg: The current LLMConfiguration struct.
 
     Returns:
         An `openai.OpenAI` client object.
     """
-    _LOGGER.debug(f"Generating llm client for {base_url} with key {api_key}")
+    return openai.OpenAI(base_url=cfg.base_url, api_key=get_api_key(cfg))
 
-    client = openai.OpenAI(base_url=base_url, api_key=api_key)
 
-    _LOGGER.debug(f"Generated client: {client}")
+def get_api_key(cfg: LLMConfiguration) -> str:
+    """Get the api key required to communicate with the llm server.
 
-    return client
+    Args:
+        cfg: The current LLMConfiguration struct.
+
+    Returns:
+        The appropriate api key.
+
+    Raises:
+        An `APIKeyNotFoundError` if the configured api key cannot be found in the environment.
+    """
+    try:
+        return os.environ[cfg.api_token_env_key]
+    except KeyError:
+        raise APIKeyNotFoundError(
+            f"API token cannot be found from environment key: {cfg.api_token_env_key}"
+        )
+
+
+@cachier()
+def generate_function_docstring(function_body: str, cfg: LLMConfiguration) -> str:
+    """Generate a function docstring for the given `function_body` according to
+    the parameters outlined in the llm configuration struct `cfg`.
+
+    Calls to this function are persistently cached with `cachier`.
+
+    Args:
+        function_body: The text data of a function to generate docstrings for.
+        cfg: The current LLMConfiguration object.
+
+    Returns:
+        A newly generated docstring for the given function.
+    """
+
+    client = get_llm_api_client(cfg)
+
+    return dispatch_completion(
+        client, cfg, _format_docstring_request_prompt(function_body)
+    )
+
+
+def sanitize_docstring(fn: ResolvedFunction, docstring: str):
+    if not docstring.endswith("\n"):
+        docstring = docstring + "\n"
+
+    return docstring
 
 
 def dispatch_completion(
@@ -56,31 +101,11 @@ def dispatch_completion(
     )
 
 
-def _format_docstring_request_prompt(fn: ResolvedFunction) -> str:
-    return f"Generate a python docstring in Google style for the following function:\n\n{fn.source_str}"
+def generate_new_function_code_with_docstring(
+    fn: ResolvedFunction, docstring: str
+) -> str:
+    print(fn)
 
 
-# f = str((Path(__file__).parent / "./config.py").resolve())
-
-# with open(f, 'r') as file:
-#     nodes = ast.parse(file.read(), filename=f).body
-
-#     fn = next(f for f in nodes if isinstance(f, ast.FunctionDef))
-
-#     print(fn)
-#     print(fn.body)
-#     print(ast.unparse(fn.body[0]))
-#     print(fn.body[0].lineno)
-
-
-# p = """
-# Generate and return only a docstring for this function in Google style
-
-# def read_from_toml(config_file: str = "pyproject.toml") -> PyGenDocsConfiguration:
-#     with open(config_file, 'r') as f:
-#         config_dict = tomli.loads(f.read()).get("tool", {}).get("pygendocs", {})
-
-#         return PyGenDocsConfiguration(**config_dict)
-# """
-
-# print(len(tiktoken.encoding_for_model("davinci").encode(p)))
+def _format_docstring_request_prompt(function_body: str) -> str:
+    return f"Generate a python docstring in Google style for the following function, only returning the docstring:\n\n{function_body}"
