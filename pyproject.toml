@@ -12,8 +12,14 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 invoke = "^2.2.0"
+tomli = "^2.0.1"
+pydantic = "^2.5.2"
+gitpython = "^3.1.40"
+typer = {extras = ["all"], version = "^0.9.0"}
+openai = "^1.6.0"
+tiktoken = "^0.5.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -22,7 +28,14 @@ black = "^23.12.0"
 isort = "^5.13.2"
 pytest = "^7.4.3"
 pre-commit = "^3.6.0"
+coverage = "^7.3.4"
+
+[tool.poetry.scripts]
+pygendocs = "pygendocs.__main__:app"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pygendocs]
+docstring_style = "reST"

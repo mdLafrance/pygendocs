@@ -26,7 +26,7 @@ jobs:
 
             - name: Run black
               run: |
-                poetry run invoke check-formatting
+                poetry run invoke formatting
 
             
     test:
@@ -52,4 +52,8 @@ jobs:
 
             - name: Run tests
               run: |
-                poetry run invoke test
+                poetry run invoke coverage
+
+            - name: Coveralls
+              uses: coverallsapp/github-action@v2
+              
