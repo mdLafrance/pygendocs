@@ -100,7 +100,7 @@ def sanitize_docstring(fn: ResolvedFunction, docstring: str):
         docstring = docstring + "\n"
 
     ### Indent docstring body
-    docstring = indent(docstring, " " * fn.ast_object.body[0].col_offset)
+    docstring = indent(docstring, " " * (4 + fn.ast_object.col_offset))
 
     return docstring
 
