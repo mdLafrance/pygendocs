@@ -34,9 +34,9 @@
 `pygendocs` scans your source code for functions that are missing docstrings, and can generate and insert them directly into the file.
 
 - Options can be configured through command line flags, or in your project's `pyproject.toml` 🛠️
+- Can be used to check docstring coverage on your project and in CI
 - Changes can first be previewed 👀
 - Changes will not be applied unless you are on a clean git branch ✔️
-- Generated docs for a function are cached to reduce api usage 💸
 - The api endpoint used for doc generation can be configured to use a self-hosted LLM 🤖
 
 ## Installation 🌎
@@ -53,10 +53,15 @@ The `pygendocs` shell script should then be available in your terminal:
 pygendocs --help
 ```
 
+<br />
+
+Out of the box, `pygendocs` is set up to use [gpt-4](https://platform.openai.com/docs/api-reference), which requires a subscription to their api service.  
+If you don't feel like giving your money to skynet, or are just curious, see the section on self-hosting an llm server [here](asdf).
+
 ## Usage 🐍
 Use the `pygendocs` command line tool to insert missing docstrings into your source code. One or more paths to files or directories can be supplied:
 ```bash
-pygendocs ./src
+pygendocs run ./src
 ```
 This will:
 - Scan the given directory `src` for python files, and within those files, for functions that don't have docstrings
@@ -72,10 +77,13 @@ pygendocs --help
 to see the complete list of options.
 
 ### Previewing changes
-If you just want some inspiration, or want to test what will happen, running the command with `--preivew` will not write any changes, and instead display the generated docstrings in the terminal.
+If you just want some inspiration, or want to test what will happen, running the `preivew` subcommand will not write any changes, and instead display the generated docstrings in the terminal.
 
 ### Checking docstring coverage
-You can use the `--coverage` flag to get a summary of which functions in the given source are missing docstsrings, and what the coverage % of docstrings is.
+You can use the `coverage` subcommand to get a summary of which functions in the given source are missing docstsrings, and what the coverage % of docstrings is.
+This process will exit with returncode `1` if the coverage threshold was not reached.
+
+Coverage threshold can be configured with the `--coverage` flag, or in `pyproject.toml`.
 
 ## Configuration ⚙️
 Persistent configuration for `pygendocs` can be written in your project's `pyproject.toml` folder, in the subsection:
