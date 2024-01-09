@@ -102,6 +102,12 @@ def run(
     ### Scan for functions to modify
     functions = filter_functions(get_functions_from_paths(paths), cfg)
 
+    # NOTE: Preprocessing step to sort functions by reverse-appearence in file.
+    #       This is so that when writing new lines into the file, we insert
+    #       upwards from the bottom as to not corrupt existing line numbers we
+    #       have scanned.
+    functions = sorted(functions, key=lambda fn: (fn.source_file, fn.ast_object.lineno), reverse=True)
+
     if not functions:
         print()
         print_message("No functions to modify!")
