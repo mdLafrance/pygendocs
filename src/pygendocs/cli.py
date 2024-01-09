@@ -118,4 +118,4 @@ def print_function(fn: ResolvedFunction, lines: int = 50):
 
 
 def update_config(cfg: PyGenDocsConfiguration, opts: dict) -> PyGenDocsConfiguration:
-    return PyGenDocsConfiguration(dict(cfg.model_dump(), **opts))
+    return PyGenDocsConfiguration(**dict(cfg.model_dump(), **opts))

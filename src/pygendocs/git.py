@@ -23,7 +23,7 @@ def is_git_repo() -> bool:
         return False
 
 
-def check_for_git_changes() -> bool:
+def repo_has_changes() -> bool:
     repo = Repo(".")
 
     return bool(repo.is_dirty() or repo.untracked_files())

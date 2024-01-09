@@ -7,6 +7,7 @@ import sys
 from itertools import chain
 from pathlib import Path
 from typing import Iterable, List, Tuple, Optional
+from typing_extensions import Annotated
 from dataclasses import dataclass
 
 import typer
@@ -30,7 +31,7 @@ from .cli import (
 )
 from .config import read_from_toml
 from .functions import ResolvedFunction, get_functions_from_file
-from .git import check_for_git_changes
+from .git import repo_has_changes, is_git_repo
 
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -60,32 +61,35 @@ class CommonArgs:
 @app.command()
 def run(
     paths: List[Path] = CommonArgs.Paths,
-    # ignore_constructors: bool = CommonArgs.IgnoreConstructors,
-    # ignore_private: bool = CommonArgs.IgnorePrivate,
-    # ignore_internal: bool = CommonArgs.IgnoreInternal,
+    ignore_constructors: bool = CommonArgs.IgnoreConstructors,
+    ignore_private: bool = CommonArgs.IgnorePrivate,
+    ignore_internal: bool = CommonArgs.IgnoreInternal,
+    force: bool = typer.Option(False, help="Ignore git safety checks.")
 ):
     """Automatically identifies and generates missing docstrings for python files
     using OpenAI (or the LLM of your choice)."""
 
-    functions = get_functions_from_paths(paths)
+    ### Check that the current running environment is in a clean git repo
+    if not force:
+        suggestion_message = "[/]NLP code generation can deliver mixed results, so it is recommended that modified files exist in version tracking so changes can be reverted.  [dim]Override with --force."
 
-    print("Running!")
+        if not is_git_repo():
+            print()
+            print_message("[bold yellow]WARNING: [/]The current directory is not part of a git repository.")
+            print_message(suggestion_message)
+            print()
+            sys.exit(1)
 
-    # fn = functions[0]
-
-    # print("[bold yellow] > [/][bold]Generating docstring for:")
-    # print(Panel(Syntax(fn.source_str, "python")))
-
-    # client = llm.get_openai_client()
-
-    # ds = llm.generate_function_docstring(client, fn)
-
-    # print("Generated docstring:")
-    # print(Panel(Syntax(ds, "python")))
+        if repo_has_changes():
+            print()
+            print_message("[bold yellow]WARNING: [/]The current git repo has pending changes.")
+            print_message(suggestion_message)
+            print()
+            sys.exit(1)
 
 
 @app.command()
-def test(message: Optional[str]):
+def test(message: Annotated[Optional[str], typer.Argument()] = None):
     """Run a test scenario against the current LLM server configuration.
 
     Useful to check correctness if hosting your own LLM server, by making sure
@@ -143,6 +147,7 @@ def check(
     line or in your `pyproject.toml`file.
     """
     ### Update config with command line options
+    global CFG
     CFG = update_config(
         CFG,
         {
