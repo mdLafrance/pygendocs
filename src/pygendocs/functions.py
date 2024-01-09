@@ -108,12 +108,12 @@ def sanitize_docstring(fn: ResolvedFunction, docstring: str):
 def write_new_docstring(fn: ResolvedFunction, docstring: str):
     """Write the new `docstring` for the given function `fn`."""
 
-    with open(fn.source_file, 'r') as f:
+    with open(fn.source_file, "r") as f:
         file = f.readlines()
-        
+
     file.insert(docstring_lineno(fn.ast_object), sanitize_docstring(fn, docstring))
 
-    with open(fn.source_file, 'w') as f:
+    with open(fn.source_file, "w") as f:
         f.writelines(file)
 
 

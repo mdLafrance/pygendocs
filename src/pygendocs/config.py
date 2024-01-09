@@ -16,7 +16,19 @@ class LLMConfiguration(BaseModel):
     base_url: Optional[str] = None
 
     def __hash__(self):
-        return hash("|".join((str(s) for s in [self.model, self.max_tokens, self.api_token_env_key, self.base_url])))
+        return hash(
+            "|".join(
+                (
+                    str(s)
+                    for s in [
+                        self.model,
+                        self.max_tokens,
+                        self.api_token_env_key,
+                        self.base_url,
+                    ]
+                )
+            )
+        )
 
 
 class DocstringStyle(str, Enum):
@@ -85,7 +97,7 @@ class PyGenDocsConfiguration(BaseModel):
             model=self.llm_model,
             max_tokens=self.llm_completion_max_tokens,
             base_url=self.llm_api_url,
-            api_token_env_key=self.llm_api_token_env_key
+            api_token_env_key=self.llm_api_token_env_key,
         )
 
 

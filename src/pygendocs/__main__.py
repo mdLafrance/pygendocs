@@ -30,7 +30,7 @@ from .cli import (
     print_function,
     get_updated_config,
     format_function_location,
-    answered_yes
+    answered_yes,
 )
 from .config import read_from_toml
 from .functions import ResolvedFunction, get_functions_from_file, write_new_docstring
@@ -67,7 +67,7 @@ def run(
     ignore_constructors: bool = CommonArgs.IgnoreConstructors,
     ignore_private: bool = CommonArgs.IgnorePrivate,
     ignore_internal: bool = CommonArgs.IgnoreInternal,
-    force: bool = typer.Option(False, help="Ignore git safety checks.")
+    force: bool = typer.Option(False, help="Ignore git safety checks."),
 ):
     """Automatically identifies and generates missing docstrings for python files
     using OpenAI (or the LLM of your choice)."""
@@ -78,14 +78,18 @@ def run(
 
         if not is_git_repo():
             print()
-            print_message("[bold yellow]WARNING: [/]The current directory is not part of a git repository.")
+            print_message(
+                "[bold yellow]WARNING: [/]The current directory is not part of a git repository."
+            )
             print_message(suggestion_message)
             print()
             sys.exit(1)
 
         if repo_has_changes():
             print()
-            print_message("[bold yellow]WARNING: [/]The current git repo has pending changes.")
+            print_message(
+                "[bold yellow]WARNING: [/]The current git repo has pending changes."
+            )
             print_message(suggestion_message)
             print()
             sys.exit(1)
@@ -106,7 +110,9 @@ def run(
     #       This is so that when writing new lines into the file, we insert
     #       upwards from the bottom as to not corrupt existing line numbers we
     #       have scanned.
-    functions = sorted(functions, key=lambda fn: (fn.source_file, fn.ast_object.lineno), reverse=True)
+    functions = sorted(
+        functions, key=lambda fn: (fn.source_file, fn.ast_object.lineno), reverse=True
+    )
 
     if not functions:
         print()
@@ -131,14 +137,22 @@ def run(
 
     for fn in functions:
         with Status(f"Generating docstring for {fn.name}"):
-            generated_docstrings[fn] = generate_function_docstring(fn.source_str, cfg.llm_configuration)
+            generated_docstrings[fn] = generate_function_docstring(
+                fn.source_str, cfg.llm_configuration
+            )
 
     print()
     print_message("The following docstrings were generated:")
     print()
 
     for fn, docstring in generated_docstrings.items():
-        print(Panel(Syntax(docstring, "python"), title=f"{format_function_location(fn)}", title_align="left"))
+        print(
+            Panel(
+                Syntax(docstring, "python"),
+                title=f"{format_function_location(fn)}",
+                title_align="left",
+            )
+        )
 
     print()
     if not answered_yes("Apply changes?"):
@@ -153,7 +167,7 @@ def run(
         print(f"✅ Wrote new docstring for {format_function_location(fn)} ")
 
     print()
-        
+
 
 @app.command()
 def check(

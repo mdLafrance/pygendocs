@@ -39,7 +39,7 @@ def get_llm_api_client(cfg: LLMConfiguration):
 
 def get_api_key(cfg: LLMConfiguration) -> str:
     """Get the api key required to communicate with the llm server.
-    
+
     Args:
         cfg: The current LLMConfiguration struct.
 
@@ -71,13 +71,11 @@ def generate_function_docstring(function_body: str, cfg: LLMConfiguration) -> st
     Returns:
         A newly generated docstring for the given function.
     """
-    
+
     client = get_llm_api_client(cfg)
 
     return dispatch_completion(
-        client,
-        cfg,
-        _format_docstring_request_prompt(function_body)
+        client, cfg, _format_docstring_request_prompt(function_body)
     )
 
 
@@ -86,13 +84,11 @@ def sanitize_docstring(fn: ResolvedFunction, docstring: str):
         docstring = docstring + "\n"
 
     return docstring
-    
 
 
 def dispatch_completion(
     client: openai.OpenAI, cfg: LLMConfiguration, message: str
 ) -> str:
-
     return (
         client.chat.completions.create(
             model=cfg.model,
@@ -105,10 +101,11 @@ def dispatch_completion(
     )
 
 
-def generate_new_function_code_with_docstring(fn: ResolvedFunction, docstring: str) -> str:
+def generate_new_function_code_with_docstring(
+    fn: ResolvedFunction, docstring: str
+) -> str:
     print(fn)
 
 
 def _format_docstring_request_prompt(function_body: str) -> str:
     return f"Generate a python docstring in Google style for the following function, only returning the docstring:\n\n{function_body}"
-
