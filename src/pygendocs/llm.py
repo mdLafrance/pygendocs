@@ -41,22 +41,19 @@ def get_llm_api_client(base_url: str = None, api_key: str = None):
     return client
 
 
-def generate_function_docstring(
-    client: openai.OpenAI, cfg: LLMConfiguration, fn: ResolvedFunction
+def dispatch_completion(
+    client: openai.OpenAI, cfg: LLMConfiguration, message: str
 ) -> str:
-    """Dispatch a call to the api client to generate a docstring for the given `ResolvedFunction` object."""
-    docstring = (
-        client.completions.create(
+    return (
+        client.chat.completions.create(
             model=cfg.model,
-            prompt=_format_docstring_request_prompt(fn),
-            max_tokens=800,
+            messages=[{"role": "user", "content": message}],
+            max_tokens=cfg.max_tokens,
             n=1,
         )
         .choices[0]
-        .text
+        .message.content
     )
-
-    return docstring
 
 
 def _format_docstring_request_prompt(fn: ResolvedFunction) -> str:
