@@ -15,6 +15,9 @@ class LLMConfiguration(BaseModel):
     api_token_env_key: str
     base_url: Optional[str] = None
 
+    def __hash__(self):
+        return hash("|".join((str(s) for s in [self.model, self.max_tokens, self.api_token_env_key, self.base_url])))
+
 
 class DocstringStyle(str, Enum):
     reST = "reST"

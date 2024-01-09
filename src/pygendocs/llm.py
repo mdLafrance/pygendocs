@@ -16,6 +16,7 @@ from cachier import cachier
 
 from .config import LLMConfiguration
 from .exceptions import APIKeyNotFoundError
+from .functions import ResolvedFunction
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -80,10 +81,18 @@ def generate_function_docstring(function_body: str, cfg: LLMConfiguration) -> st
     )
 
 
+def sanitize_docstring(fn: ResolvedFunction, docstring: str):
+    if not docstring.endswith("\n"):
+        docstring = docstring + "\n"
+
+    return docstring
+    
+
 
 def dispatch_completion(
     client: openai.OpenAI, cfg: LLMConfiguration, message: str
 ) -> str:
+
     return (
         client.chat.completions.create(
             model=cfg.model,
@@ -96,6 +105,10 @@ def dispatch_completion(
     )
 
 
+def generate_new_function_code_with_docstring(fn: ResolvedFunction, docstring: str) -> str:
+    print(fn)
+
+
 def _format_docstring_request_prompt(function_body: str) -> str:
-    return f"Generate a python docstring in Google style for the following function:\n\n{function_body}"
+    return f"Generate a python docstring in Google style for the following function, only returning the docstring:\n\n{function_body}"
 

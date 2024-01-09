@@ -3,8 +3,10 @@
 
 import ast
 import logging
+
 from pathlib import Path
 from typing import List, Union
+from textwrap import indent
 
 from pydantic import BaseModel
 
@@ -34,6 +36,9 @@ class ResolvedFunction(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    def __hash__(self):
+        return hash(f"{self.source_file}:{self.name}")
 
 
 def docstring_lineno(fn: ast.FunctionDef) -> int:
@@ -89,26 +94,27 @@ def get_functions_from_file(file: str | Path) -> List[ResolvedFunction]:
     return sorted(function_structs, key=lambda fn: fn.name)
 
 
-def generate_docstring_for_function(fn: ast.FunctionDef) -> str:
-    return f"DOCSTRING FOR {fn}"
+def sanitize_docstring(fn: ResolvedFunction, docstring: str):
+    ### Append trailing newline if not present
+    if not docstring.endswith("\n"):
+        docstring = docstring + "\n"
+
+    ### Indent docstring body
+    docstring = indent(docstring, " " * fn.ast_object.body[0].col_offset)
+
+    return docstring
 
 
-def write_function_docstrings(file: str, cfg: PyGenDocsConfiguration = None):
-    # Use default config if none provided
-    cfg = cfg or PyGenDocsConfiguration()
+def write_new_docstring(fn: ResolvedFunction, docstring: str):
+    """Write the new `docstring` for the given function `fn`."""
 
-    _LOGGER.debug(f"Generating function docstrings for {file}")
-    _LOGGER.debug(f"Configuration: {cfg}")
+    with open(fn.source_file, 'r') as f:
+        file = f.readlines()
+        
+    file.insert(docstring_lineno(fn.ast_object), sanitize_docstring(fn, docstring))
 
-    functions = get_functions_from_file(file)
-
-    _LOGGER.debug(f"File containing functions:")
-
-    for fn in functions:
-        _LOGGER.debug(_dump_function_information(fn))
-
-    for fn in functions:
-        print(_dump_function_information(fn), docstring_lineno(fn))
+    with open(fn.source_file, 'w') as f:
+        f.writelines(file)
 
 
 def _dump_function_information(fn: ast.FunctionDef) -> str:
